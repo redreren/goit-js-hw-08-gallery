@@ -1,36 +1,60 @@
 import galleryItems from "./gallery-items.js";
 
-// Создай галерею с возможностью клика по ее элементам и просмотра полноразмерного изображения 
-// в модальном окне. Разбей задание на несколько подзадач:
+const refs = {
+    galleryList: document.querySelector('.js-gallery'),
+    box: document.querySelector(".js-lightbox"),
+    imageWrap: document.querySelector(".lightbox__content"),
+    modalImg: document.querySelector(".lightbox__image"),
+    btn: document.querySelector("[data-action=close-lightbox]"),
+}
 
-// Создание и рендер разметки по массиву данных и предоставленному шаблону.
-// Реализация делегирования на галерее ul.js-gallery и получение url большого изображения.
-// Открытие модального окна по клику на элементе галереи.
-// Подмена значения атрибута src элемента img.lightbox__image.
-// Закрытие модального окна по клику на кнопку button[data-action="close-lightbox"].
-// Очистка значения атрибута src элемента img.lightbox__image. Это необходимо для того,
-// чтобы при следующем открытии модального окна, пока грузится изображение, мы не видели предыдущее.
+galleryItems.forEach((element, index) => {
+    const galleryItem = document.createElement("li");
+    galleryItem.classList.add("gallery__item");
 
-// Разметка элемента галереи
-// Ссылка на оригинальное изображение должна храниться в data-атрибуте source на элементе img,
-// и указываться в href ссылки(это необходимо для доступности).
+    const link = document.createElement("a");
+    link.classList.add("gallery__link");
+    link.href = element.original;
 
-// <li class="gallery__item">
-//   <a
-//     class="gallery__link"
-//     href="https://cdn.pixabay.com/photo/2010/12/13/10/13/tulips-2546_1280.jpg"
-//   >
-//     <img
-//       class="gallery__image"
-//       src="https://cdn.pixabay.com/photo/2010/12/13/10/13/tulips-2546__340.jpg"
-//       data-source="https://cdn.pixabay.com/photo/2010/12/13/10/13/tulips-2546_1280.jpg"
-//       alt="Tulips"
-//     />
-//   </a>
-// </li>
-// Дополнительно
-// Следующий функционал не обязателен при сдаче задания, но будет хорошей практикой по работе с событиями.
+    const image = document.createElement("img");
+    image.classList.add("gallery__image");
+    image.src = element.preview;
+    image.alt = element.description;
+    image.dataset.source = element.original;
+    image.dataset.index = index;
 
-// Закрытие модального окна по клику на div.lightbox__overlay.
-// Закрытие модального окна по нажатию клавиши ESC.
-// Пролистывание изображений галереи в открытом модальном окне клавишами "влево" и "вправо".
+    link.appendChild(image);
+    galleryItem.appendChild(link);
+
+    refs.galleryList.appendChild(galleryItem);
+});
+
+refs.galleryList.addEventListener('click', openOverlay);
+refs.btn.addEventListener("click", closeOverlay);
+window.addEventListener("keydown", closeOverlayByEsc);
+
+function openOverlay(event) {
+    event.preventDefault();
+    refs.box.classList.add("is-open");
+    const modalLink = event.target.dataset.source;
+    refs.modalImg.src = modalLink;
+    refs.box.addEventListener("click", closeOverlayByClick);
+}
+
+function closeOverlay() {
+    refs.box.classList.remove("is-open");
+    refs.modalImg.src = "";
+}
+
+function closeOverlayByClick(event) {
+    if (event.target.nodeName !== "IMG") {
+      closeOverlay();
+      refs.box.removeEventListener("click", closeOverlayByClick);
+    }
+}
+
+function closeOverlayByEsc(event) {
+    if (event.code === "Escape") {
+    closeOverlay();
+  }
+}
